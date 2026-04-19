@@ -48,7 +48,7 @@ jobs:
           tar czf "${DIR}.tar.gz" "$DIR"
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: '*.tar.gz'
