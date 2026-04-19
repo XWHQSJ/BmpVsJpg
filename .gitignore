@@ -6,6 +6,7 @@ x86/
 ipch/
 obj/
 bin/
+build/
 
 # Visual Studio user/workspace files
 *.suo
