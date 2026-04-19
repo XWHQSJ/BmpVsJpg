@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact: jpeg_edu-linux-x86_64
+          - os: macos-14
+            artifact: jpeg_edu-macos-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libjpeg-turbo (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libjpeg-turbo8-dev
+
+      - name: Install libjpeg-turbo (macOS)
+        if: runner.os == 'macOS'
+        run: brew install jpeg-turbo
+
+      - name: Configure
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel --config Release
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Package
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          DIR="${{ matrix.artifact }}-${TAG}"
+          mkdir -p "$DIR"
+          cp build/jpeg_edu "$DIR/"
+          cp README.md LICENSE "$DIR/"
+          tar czf "${DIR}.tar.gz" "$DIR"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: '*.tar.gz'
+
+  publish:
+    needs: build-release
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: '*.tar.gz'
+          generate_release_notes: true

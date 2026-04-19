@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14]
+        sanitizer: [asan, ubsan]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libjpeg-turbo (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libjpeg-turbo8-dev
+
+      - name: Install libjpeg-turbo (macOS)
+        if: runner.os == 'macOS'
+        run: brew install jpeg-turbo
+
+      - name: Set sanitizer flags
+        id: san
+        run: |
+          if [ "${{ matrix.sanitizer }}" = "asan" ]; then
+            echo "flags=-fsanitize=address -fno-omit-frame-pointer -g" >> "$GITHUB_OUTPUT"
+          else
+            echo "flags=-fsanitize=undefined -fno-omit-frame-pointer -g" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure
+        run: |
+          cmake -B build -S . \
+            -DCMAKE_CXX_FLAGS="${{ steps.san.outputs.flags }}" \
+            -DCMAKE_EXE_LINKER_FLAGS="${{ steps.san.outputs.flags }}"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  fuzz:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [fuzz_decoder, fuzz_bmp_reader]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libjpeg-turbo8-dev clang
+
+      - name: Configure fuzzer build
+        run: |
+          cmake -B build-fuzz -S . \
+            -DENABLE_FUZZ=ON \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++
+
+      - name: Build fuzz target
+        run: cmake --build build-fuzz --target ${{ matrix.target }} --parallel
+
+      - name: Generate seed corpus
+        run: |
+          cmake --build build-fuzz --target jpeg_edu --parallel
+          chmod +x fuzz/generate_corpus.sh
+          PATH="$(pwd)/build-fuzz:$PATH" fuzz/generate_corpus.sh || true
+
+      - name: Run fuzzer (300s)
+        run: |
+          mkdir -p fuzz-artifacts
+          ./build-fuzz/fuzz/${{ matrix.target }} \
+            fuzz/corpus/ \
+            -artifact_prefix=fuzz-artifacts/ \
+            -max_total_time=300 \
+            -print_final_stats=1 \
+            2>&1 | tee fuzz-output.log || true
+
+      - name: Upload crash artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-crashes-${{ matrix.target }}
+          path: fuzz-artifacts/
+          if-no-files-found: ignore
+
+      - name: Upload fuzz log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-log-${{ matrix.target }}
+          path: fuzz-output.log
