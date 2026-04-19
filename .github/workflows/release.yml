@@ -19,7 +19,7 @@ jobs:
             artifact: jpeg_edu-macos-arm64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install libjpeg-turbo (Ubuntu)
         if: runner.os == 'Linux'

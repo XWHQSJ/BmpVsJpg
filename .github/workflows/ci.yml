@@ -15,7 +15,7 @@ jobs:
         sanitizer: [asan, ubsan]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install libjpeg-turbo (Ubuntu)
         if: runner.os == 'Linux'
@@ -53,7 +53,7 @@ jobs:
         target: [fuzz_decoder, fuzz_bmp_reader]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
