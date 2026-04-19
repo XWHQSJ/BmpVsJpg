@@ -43,6 +43,29 @@ target_link_libraries(roundtrip_test PRIVATE libjpeg_edu GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(roundtrip_test)
 
+# ---- Fuzz targets (requires clang + libFuzzer) ----
+option(ENABLE_FUZZ "Build libFuzzer targets (requires clang)" OFF)
+
+if(ENABLE_FUZZ)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "Fuzzing requires Clang (got ${CMAKE_CXX_COMPILER_ID})")
+    endif()
+
+    set(FUZZ_FLAGS "-fsanitize=address,undefined,fuzzer -fno-omit-frame-pointer -g")
+
+    add_executable(fuzz_decoder fuzz/fuzz_decoder.cpp)
+    target_link_libraries(fuzz_decoder PRIVATE libjpeg_edu)
+    set_target_properties(fuzz_decoder PROPERTIES
+        COMPILE_FLAGS "${FUZZ_FLAGS}"
+        LINK_FLAGS "${FUZZ_FLAGS}")
+
+    add_executable(fuzz_bmp_reader fuzz/fuzz_bmp_reader.cpp)
+    target_link_libraries(fuzz_bmp_reader PRIVATE libjpeg_edu)
+    set_target_properties(fuzz_bmp_reader PROPERTIES
+        COMPILE_FLAGS "${FUZZ_FLAGS}"
+        LINK_FLAGS "${FUZZ_FLAGS}")
+endif()
+
 # ---- MFC targets (Windows only) ----
 if(MSVC)
     message(STATUS "MSVC detected — MFC targets available but not built by default")

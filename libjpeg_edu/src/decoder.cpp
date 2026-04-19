@@ -71,6 +71,46 @@ ImageBuffer decode_jpeg(const std::string& path) {
     return img;
 }
 
+ImageBuffer decode_jpeg_mem(const uint8_t* data, size_t size) {
+    if (!data || size == 0) {
+        throw std::runtime_error("Empty JPEG data");
+    }
+
+    jpeg_decompress_struct cinfo{};
+    ErrorMgr jerr{};
+
+    cinfo.err = jpeg_std_error(&jerr.pub);
+    jerr.pub.error_exit = error_exit_handler;
+
+    if (setjmp(jerr.setjmp_buffer)) {
+        jpeg_destroy_decompress(&cinfo);
+        throw std::runtime_error(std::string("JPEG decode error: ") + jerr.message);
+    }
+
+    jpeg_create_decompress(&cinfo);
+    jpeg_mem_src(&cinfo, data, static_cast<unsigned long>(size));
+    jpeg_read_header(&cinfo, TRUE);
+    cinfo.out_color_space = JCS_RGB;
+    jpeg_start_decompress(&cinfo);
+
+    ImageBuffer img;
+    img.width = static_cast<int>(cinfo.output_width);
+    img.height = static_cast<int>(cinfo.output_height);
+    img.channels = 3;
+    img.data.resize(static_cast<size_t>(img.width) * img.height * img.channels);
+
+    int row_stride = img.width * img.channels;
+    while (cinfo.output_scanline < cinfo.output_height) {
+        uint8_t* row = img.data.data() + cinfo.output_scanline * row_stride;
+        jpeg_read_scanlines(&cinfo, &row, 1);
+    }
+
+    jpeg_finish_decompress(&cinfo);
+    jpeg_destroy_decompress(&cinfo);
+
+    return img;
+}
+
 ImageInfo jpeg_info(const std::string& path) {
     FILE* infile = std::fopen(path.c_str(), "rb");
     if (!infile) {
