@@ -179,11 +179,11 @@ HCURSOR CBmpVsJpgDlg::OnQueryDragIcon()
 }
 
 void CBmpVsJpgDlg::OnButtonfinds() 
-{//²éÕÒÔ´ÎÄ¼þ
+{//ï¿½ï¿½ï¿½ï¿½Ô´ï¿½Ä¼ï¿½
 	// TODO: Add your control notification handler code here
 	if(m_CBmpToJpg.GetCheck())
 	{
-		CFileDialog fileDialog(TRUE,NULL,NULL,NULL,"BMPÎÄ¼þ(*.bmp)|*.bmp|");
+		CFileDialog fileDialog(TRUE,NULL,NULL,NULL,"BMPï¿½Ä¼ï¿½(*.bmp)|*.bmp|");
 		
 		if (fileDialog.DoModal() == IDOK) 
 		{
@@ -193,7 +193,7 @@ void CBmpVsJpgDlg::OnButtonfinds()
 	}
 	else
 	{
-		CFileDialog fileDialog(TRUE,NULL,NULL,NULL,"JPGÎÄ¼þ(*.jpg)|*.jpg|");
+		CFileDialog fileDialog(TRUE,NULL,NULL,NULL,"JPGï¿½Ä¼ï¿½(*.jpg)|*.jpg|");
 		
 		if (fileDialog.DoModal() == IDOK) 
 		{
@@ -204,11 +204,11 @@ void CBmpVsJpgDlg::OnButtonfinds()
 }
 
 void CBmpVsJpgDlg::OnButtondest() 
-{//²éÕÒÄ¿±êÎÄ¼þ
+{//ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½Ä¼ï¿½
 	// TODO: Add your control notification handler code here
 	if(m_CBmpToJpg.GetCheck())
 	{
-		CFileDialog fileDialog(FALSE,NULL,NULL,NULL,"JPGÎÄ¼þ(*.jpg)|*.jpg|");
+		CFileDialog fileDialog(FALSE,NULL,NULL,NULL,"JPGï¿½Ä¼ï¿½(*.jpg)|*.jpg|");
 		
 		if (fileDialog.DoModal() == IDOK) 
 		{
@@ -224,7 +224,7 @@ void CBmpVsJpgDlg::OnButtondest()
 	}
 	else
 	{
-		CFileDialog fileDialog(FALSE,NULL,NULL,NULL,"BMPÎÄ¼þ(*.bmp)|*.bmp|");
+		CFileDialog fileDialog(FALSE,NULL,NULL,NULL,"BMPï¿½Ä¼ï¿½(*.bmp)|*.bmp|");
 		
 		if (fileDialog.DoModal() == IDOK) 
 		{
@@ -242,7 +242,7 @@ void CBmpVsJpgDlg::OnButtondest()
 }
 
 void CBmpVsJpgDlg::OnButtonbegin() 
-{//¿ªÊ¼×ª»»
+{//ï¿½ï¿½Ê¼×ªï¿½ï¿½
 	// TODO: Add your control notification handler code here
 	UpdateData();
 	if(m_strSrc == "")
@@ -263,13 +263,15 @@ void CBmpVsJpgDlg::OnButtonbegin()
 		CDib * pDib;
 		pDib=new CDib;
 		
-		int iQuality=100;
-		
-		// ¶ÁÈ¡BmpÐÅÏ¢
+		// TODO: wire this to a UI slider control for user-adjustable quality.
+		// Default changed from 100 (lossless) to 85 (good quality, smaller size).
+		int iQuality=85;
+
+		// ï¿½ï¿½È¡Bmpï¿½ï¿½Ï¢
 		CFile file(m_strSrc,CFile::modeRead|CFile::shareDenyNone);
 		pDib->Read(&file);
 		
-		// ±£´æÎªJpg¸ñÊ½
+		// ï¿½ï¿½ï¿½ï¿½ÎªJpgï¿½ï¿½Ê½
 		bt=jj.Save(m_strDest, pDib, TRUE, iQuality);
 		delete pDib;
 		pDib = NULL;
@@ -284,23 +286,23 @@ void CBmpVsJpgDlg::OnButtonbegin()
 		CDib * pDib;
 		pDib=new CDib;
 		
-		// ´´½¨CFile¶ÔÏó
+		// ï¿½ï¿½ï¿½ï¿½CFileï¿½ï¿½ï¿½ï¿½
 		CFile file(m_strDest,CFile::modeCreate | CFile::modeWrite);
 		
-		// ¼ÓÔØJPGÎÄ¼þÄÚÈÝ
+		// ï¿½ï¿½ï¿½ï¿½JPGï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 		jj.Load(m_strSrc);
-		// »ñµÃJPGÎÄ¼þ¾ä±ú
+		// ï¿½ï¿½ï¿½JPGï¿½Ä¼ï¿½ï¿½ï¿½ï¿½
 		HDIB hDIB = CopyHandle(jj.GetDib()->GetHandle());
 		if (hDIB == NULL)
 			return ;
-		// ½«DIB¶ÔÏóÓëJPGÎÄ¼þ¾ä±ú¹ØÁªÆðÀ´
+		// ï¿½ï¿½DIBï¿½ï¿½ï¿½ï¿½ï¿½ï¿½JPGï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		pDib->Attach(hDIB);
 
-		int iColorBit = 24;//BMPÑÕÉ«Î»Êý £¬24Î»Bmp / ¿ÉÒÔÑ¡Ôñ1¡¢4¡¢8Î»	
+		int iColorBit = 24;//BMPï¿½ï¿½É«Î»ï¿½ï¿½ ï¿½ï¿½24Î»Bmp / ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½1ï¿½ï¿½4ï¿½ï¿½8Î»	
 		pDib->ConvertFormat(iColorBit);	// 24Î»Bmp
 		
 		
-		// Ð´BMPÎÄ¼þÊý¾Ý
+		// Ð´BMPï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 		bt=pDib->Write(&file);
 		
 		delete pDib;
@@ -310,7 +312,7 @@ void CBmpVsJpgDlg::OnButtonbegin()
 }
 
 void CBmpVsJpgDlg::OnCancel() 
-{//ÍË³ö
+{//ï¿½Ë³ï¿½
 	// TODO: Add extra cleanup here
 	
 	CDialog::OnCancel();
