@@ -1,0 +1,54 @@
+# Build output
+Debug/
+Release/
+x64/
+x86/
+ipch/
+obj/
+bin/
+
+# Visual Studio user/workspace files
+*.suo
+*.user
+*.sdf
+*.opensdf
+*.ncb
+*.VC.db
+*.VC.opendb
+*.aps
+.vs/
+
+# VC6 legacy
+*.opt
+*.plg
+
+# Compiled binaries and symbols
+*.exe
+*.dll
+*.lib
+*.obj
+*.o
+*.pdb
+*.ilk
+*.idb
+*.exp
+
+# Precompiled headers
+*.pch
+
+# IntelliSense
+*.ipch
+
+# Build logs
+*.log
+*.tlog/
+UpgradeLog.htm
+
+# Backup files
+*.bak
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
