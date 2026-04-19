@@ -36,9 +36,14 @@ jobs:
 
       - name: Configure
         run: |
+          extra_args=""
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            extra_args="-DCMAKE_PREFIX_PATH=$(brew --prefix jpeg-turbo)"
+          fi
           cmake -B build -S . \
             -DCMAKE_CXX_FLAGS="${{ steps.san.outputs.flags }}" \
-            -DCMAKE_EXE_LINKER_FLAGS="${{ steps.san.outputs.flags }}"
+            -DCMAKE_EXE_LINKER_FLAGS="${{ steps.san.outputs.flags }}" \
+            $extra_args
 
       - name: Build
         run: cmake --build build --parallel

@@ -88,7 +88,10 @@ ImageBuffer decode_jpeg_mem(const uint8_t* data, size_t size) {
     }
 
     jpeg_create_decompress(&cinfo);
-    jpeg_mem_src(&cinfo, data, static_cast<unsigned long>(size));
+    // const_cast needed: some libjpeg headers (e.g. Mono framework) declare
+    // the buffer parameter as non-const unsigned char*.
+    jpeg_mem_src(&cinfo, const_cast<uint8_t*>(data),
+                 static_cast<unsigned long>(size));
     jpeg_read_header(&cinfo, TRUE);
     cinfo.out_color_space = JCS_RGB;
     jpeg_start_decompress(&cinfo);
