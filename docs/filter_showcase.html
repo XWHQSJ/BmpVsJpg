@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Filter Showcase -- jpeg_edu</title>
+<style>
+  :root {
+    --surface: #0e1117;
+    --surface-alt: #161b22;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --border: #30363d;
+    --radius: 8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--surface);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 {
+    font-size: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    margin-bottom: 2.5rem;
+    padding: 1.5rem;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .split img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    background: #000;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+  .split-info { padding: 0.5rem 0; }
+  .split-info h2 { font-size: 1.3rem; margin-bottom: 0.75rem; }
+  .split-info h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .split-info p { color: var(--text-muted); margin-bottom: 0.5rem; }
+  .kernel-table {
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .kernel-table td {
+    width: 2.5rem;
+    height: 2.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  code {
+    background: var(--surface);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: var(--accent);
+    color: var(--surface);
+  }
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  @media (max-width: 700px) {
+    .split { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Image Filter Showcase</h1>
+  <p class="subtitle">
+    Each filter applied to the same 256x256 reference gradient via <code>jpeg_edu filter</code>.
+    All filters operate on grayscale internally (luminance conversion from RGB).
+  </p>
+
+  <!-- Reference -->
+  <section class="split">
+    <img src="assets/reference.jpg" alt="Reference (original)" width="256" height="256">
+    <div class="split-info">
+      <h2>Reference (Original)</h2>
+      <p>256x256 RGB gradient image before any filtering.</p>
+      <p>Used as input for all filters below.</p>
+      <p><span class="badge">3 channels</span></p>
+    </div>
+  </section>
+
+  <!-- Blur -->
+  <section class="split">
+    <img src="assets/filter_blur.jpg" alt="Blur filter" width="256" height="256" loading="lazy">
+    <div class="split-info">
+      <h2>Gaussian Blur</h2>
+      <h3>Kernel</h3>
+      <table class="kernel-table">
+        <tr><td>1</td><td>2</td><td>1</td></tr>
+        <tr><td>2</td><td>4</td><td>2</td></tr>
+        <tr><td>1</td><td>2</td><td>1</td></tr>
+      </table>
+      <p>Divisor: 16. Weighted average approximating a Gaussian distribution. Smooths noise and detail uniformly.</p>
+      <p><code>jpeg_edu filter input.bmp out.bmp -f blur</code></p>
+    </div>
+  </section>
+
+  <!-- Sharpen -->
+  <section class="split">
+    <img src="assets/filter_sharpen.jpg" alt="Sharpen filter" width="256" height="256" loading="lazy">
+    <div class="split-info">
+      <h2>Sharpen</h2>
+      <h3>Kernel</h3>
+      <table class="kernel-table">
+        <tr><td>0</td><td>-1</td><td>0</td></tr>
+        <tr><td>-1</td><td>5</td><td>-1</td></tr>
+        <tr><td>0</td><td>-1</td><td>0</td></tr>
+      </table>
+      <p>Enhances edges by subtracting blurred version from the original, amplifying high-frequency detail.</p>
+      <p><code>jpeg_edu filter input.bmp out.bmp -f sharpen</code></p>
+    </div>
+  </section>
+
+  <!-- Edge Detection -->
+  <section class="split">
+    <img src="assets/filter_edge.jpg" alt="Edge detection filter" width="256" height="256" loading="lazy">
+    <div class="split-info">
+      <h2>Edge Detection (Laplacian)</h2>
+      <h3>Kernel</h3>
+      <table class="kernel-table">
+        <tr><td>-1</td><td>-1</td><td>-1</td></tr>
+        <tr><td>-1</td><td>8</td><td>-1</td></tr>
+        <tr><td>-1</td><td>-1</td><td>-1</td></tr>
+      </table>
+      <p>Second-derivative operator detecting intensity discontinuities in all directions. Produces bright edges on dark background.</p>
+      <p><code>jpeg_edu filter input.bmp out.bmp -f edge</code></p>
+    </div>
+  </section>
+
+  <!-- Sobel -->
+  <section class="split">
+    <img src="assets/filter_sobel.jpg" alt="Sobel filter" width="256" height="256" loading="lazy">
+    <div class="split-info">
+      <h2>Sobel Edge Detector</h2>
+      <h3>Gx Kernel</h3>
+      <table class="kernel-table">
+        <tr><td>-1</td><td>0</td><td>1</td></tr>
+        <tr><td>-2</td><td>0</td><td>2</td></tr>
+        <tr><td>-1</td><td>0</td><td>1</td></tr>
+      </table>
+      <h3>Gy Kernel</h3>
+      <table class="kernel-table">
+        <tr><td>-1</td><td>-2</td><td>-1</td></tr>
+        <tr><td>0</td><td>0</td><td>0</td></tr>
+        <tr><td>1</td><td>2</td><td>1</td></tr>
+      </table>
+      <p>Gradient magnitude = sqrt(Gx^2 + Gy^2). Detects edges with directional sensitivity and noise suppression.</p>
+      <p><code>jpeg_edu filter input.bmp out.bmp -f sobel</code></p>
+    </div>
+  </section>
+
+  <!-- Median -->
+  <section class="split">
+    <img src="assets/filter_median.jpg" alt="Median filter" width="256" height="256" loading="lazy">
+    <div class="split-info">
+      <h2>Median Filter</h2>
+      <h3>3x3 Window</h3>
+      <p>Non-linear filter: replaces each pixel with the median of its 3x3 neighborhood. Removes salt-and-pepper noise while preserving edges better than linear averaging.</p>
+      <p><code>jpeg_edu filter input.bmp out.bmp -f median</code></p>
+    </div>
+  </section>
+
+  <footer>
+    Generated by <a href="https://github.com/XWHQSJ/BmpVsJpg">jpeg_edu</a>
+    &mdash; see also <a href="quality_comparison.html">Quality Comparison</a>
+  </footer>
+</div>
+</body>
+</html>
